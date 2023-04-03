@@ -2,6 +2,9 @@ package dev.rexios.watch_connectivity
 
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.os.Bundle
+import android.util.Log
+import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.*
 import com.google.android.gms.wearable.DataEvent.TYPE_CHANGED
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -9,10 +12,12 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
+import java.time.Instant
 
 
 /** WatchConnectivityPlugin */
@@ -137,18 +142,30 @@ class WatchConnectivityPlugin : FlutterPlugin, MethodCallHandler,
 
     @SuppressLint("VisibleForTests")
     private fun updateApplicationContext(call: MethodCall, result: Result) {
-        val eventData = objectToBytes(call.arguments)
-        val dataItem = PutDataRequest.create("/$channelName")
-        dataItem.data = eventData
+        val dataItem = PutDataMapRequest.create("/$channelName").apply {
+            (call.arguments as? Map<*, *>)?.forEach { entry ->
+                when (entry.value) {
+                    // Add other types when needed
+                    is String -> dataMap.putString(entry.key as String, entry.value as String)
+                }
+            }
+            setUrgent()
+        }
+            .asPutDataRequest()
+
         dataClient.putDataItem(dataItem)
             .addOnSuccessListener { result.success(null) }
             .addOnFailureListener { result.error(it.message ?: "", it.localizedMessage, it) }
-
     }
 
     override fun onMessageReceived(message: MessageEvent) {
-        val messageContent = objectFromBytes(message.data)
-        channel.invokeMethod("didReceiveMessage", messageContent)
+        val args = mutableMapOf<String, Any>(
+            "method" to message.path,
+        )
+        if (message.data.isNotEmpty()) {
+            args["data"] = objectFromBytes(message.data)
+        }
+        channel.invokeMethod("didReceiveMessage", args)
     }
 
     @SuppressLint("VisibleForTests")

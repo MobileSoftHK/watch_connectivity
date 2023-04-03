@@ -28,6 +28,11 @@ public class SwiftWatchConnectivityPlugin: NSObject, FlutterPlugin, WCSessionDel
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if session?.delegate == nil {
+            session?.delegate = self
+            session?.activate()
+        }
+
         switch call.method {
         // Getters
         case "isSupported":
