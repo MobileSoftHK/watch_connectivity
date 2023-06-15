@@ -4,14 +4,18 @@ version: 0.1.2
 homepage: https://github.com/Rexios80/watch_connectivity/tree/master/watch_connectivity_garmin
 
 environment:
-  sdk: ">=2.17.1 <3.0.0"
+  sdk: ">=2.15.1 <3.0.0"
   flutter: ">=2.5.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  
-  watch_connectivity_platform_interface: ^0.1.1
+
+  watch_connectivity_platform_interface:
+    git:
+      url: https://github.com/MobileSoftHK/watch_connectivity.git
+      path: ./watch_connectivity_platform_interface
+      ref: 0.1.4+1
 
 dev_dependencies:
   flutter_test:
