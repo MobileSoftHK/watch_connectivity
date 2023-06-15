@@ -36,7 +36,7 @@ class WatchConnectivityGarminPlugin : FlutterPlugin, MethodCallHandler {
         context = flutterPluginBinding.applicationContext
 
         packageManager = context.packageManager
-        connectIQ = ConnectIQ.getInstance(context, ConnectIQ.IQConnectType.WIRELESS)
+        connectIQ = ConnectIQ.getInstance(context, ConnectIQ.IQConnectType.TETHERED)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
