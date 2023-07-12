@@ -27,6 +27,12 @@ class WatchConnectivityGarmin extends WatchConnectivityBase {
     return channel.invokeMethod('showDeviceSelection');
   }
 
+  /// iOS only
+  Future<bool> openUrl(String url) async {
+    final success = await channel.invokeMethod<bool>('openUrl', {"url": url});
+    return success ?? false;
+  }
+
   /// If the Garmin Connect app is installed
   @override
   Future<bool> get isSupported => super.isSupported;
