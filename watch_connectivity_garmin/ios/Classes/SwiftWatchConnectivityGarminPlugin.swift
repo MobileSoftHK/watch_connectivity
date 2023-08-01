@@ -39,6 +39,8 @@ public class SwiftWatchConnectivityGarminPlugin: NSObject, FlutterPlugin, IQDevi
             initialize(call, result)
         case "showDeviceSelection":
             showDeviceSelection(result)
+        case "openUrl":
+            openUrl(call, result)
         case "sendMessage":
             sendMessage(call, result)
 
@@ -66,6 +68,34 @@ public class SwiftWatchConnectivityGarminPlugin: NSObject, FlutterPlugin, IQDevi
         registerForEvents()
 
         return true
+    }
+
+    public func openUrl(_ call: FlutterMethodCall, _ result: FlutterResult) {
+        let args = call.arguments as! [String: Any]
+
+        guard let url = args["url"] as? String, let urlEncoded = url.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            result(false)
+            return
+        }
+
+        let urlObject = URL(string: urlEncoded)
+
+        guard urlObject?.scheme == urlScheme else {
+            result(false)
+            return
+        }
+
+        let devices = connectIQ.parseDeviceSelectionResponse(from: urlObject) as? [IQDevice]
+
+        guard devices != nil else {
+            result(false)
+            return
+        }
+
+        defaults.set(devices!.map { $0.uuid.uuidString }, forKey: Self.deviceIdsKey)
+        registerForEvents()
+
+        result(true)
     }
 
     private func getCachedDevices() -> [IQDevice] {
@@ -135,11 +165,7 @@ public class SwiftWatchConnectivityGarminPlugin: NSObject, FlutterPlugin, IQDevi
         result(false)
     }
 
-    private func sendMessage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        Task { await sendMessageAsync(call, result) }
-    }
-
-    private func sendMessageAsync(_ call: FlutterMethodCall, _ result: FlutterResult) async {
+    private func sendMessage(_ call: FlutterMethodCall, _ result: FlutterResult) {
         guard applicationId != nil else {
             result(FlutterError(code: "Not Initialized", message: nil, details: nil))
             return
@@ -148,18 +174,15 @@ public class SwiftWatchConnectivityGarminPlugin: NSObject, FlutterPlugin, IQDevi
         let connectedApps = createApps().filter { connectIQ.getDeviceStatus($0.device) == .connected }
         
         guard !connectedApps.isEmpty else {
-            result(FlutterError(code: "No connected devices", message: nil, details: nil))
+            result(nil)
             return
         }
 
         var errors = [String]()
         for app in connectedApps {
-            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-                connectIQ.sendMessage(call.arguments, to: app, progress: { _, _ in }) { result in
-                    if result != .success {
-                        errors.append("\(result)")
-                    }
-                    continuation.resume()
+            connectIQ.sendMessage(call.arguments, to: app, progress: { _, _ in }) { result in
+                if result != .success {
+                    errors.append("\(result)")
                 }
             }
         }
