@@ -1,6 +1,6 @@
 name: watch_connectivity
 description: Wrapper for WatchConnectivity on iOS and Wearable APIs on Android
-version: 0.1.4+1
+version: 0.1.5+1
 homepage: https://github.com/Rexios80/watch_connectivity/tree/master/watch_connectivity
 
 environment:
@@ -15,7 +15,6 @@ dependencies:
     git:
       url: https://github.com/MobileSoftHK/watch_connectivity.git
       path: ./watch_connectivity_platform_interface
-      ref: 0.1.4+1
 
 dev_dependencies:
   flutter_test:
