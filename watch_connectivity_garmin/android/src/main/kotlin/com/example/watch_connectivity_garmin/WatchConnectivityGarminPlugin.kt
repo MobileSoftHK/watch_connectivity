@@ -28,6 +28,7 @@ class WatchConnectivityGarminPlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var packageManager: PackageManager
     private lateinit var connectIQ: ConnectIQ
     private lateinit var iqApp: IQApp
+    private var initialized: Boolean = false
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "watch_connectivity_garmin")
@@ -41,7 +42,10 @@ class WatchConnectivityGarminPlugin : FlutterPlugin, MethodCallHandler {
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
-        connectIQ.shutdown(context)
+        if (initialized) {
+            connectIQ.shutdown(context)
+            initialized = false
+        }
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
@@ -69,6 +73,7 @@ class WatchConnectivityGarminPlugin : FlutterPlugin, MethodCallHandler {
             call.argument<Boolean>("autoUI")!!,
             object : ConnectIQListener {
                 override fun onSdkReady() {
+                    initialized = true
                     listenForMessages()
                     result.success(null)
                 }
@@ -83,6 +88,8 @@ class WatchConnectivityGarminPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     private fun listenForMessages() {
+        if (!initialized) return
+
         val devices = connectIQ.knownDevices ?: listOf()
 
         for (device in devices) {
@@ -97,6 +104,8 @@ class WatchConnectivityGarminPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     private fun processDeviceStatus(device: IQDevice, status: IQDevice.IQDeviceStatus) {
+        if (!initialized) return
+
         if (status == IQDevice.IQDeviceStatus.CONNECTED) {
             connectIQ.registerForAppEvents(device, iqApp) { _, _, data, status ->
                 if (status != ConnectIQ.IQMessageStatus.SUCCESS) return@registerForAppEvents
@@ -138,24 +147,37 @@ class WatchConnectivityGarminPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     private fun isPaired(result: Result) {
-        result.success(connectIQ.knownDevices?.isNotEmpty() ?: false)
+        if (initialized) {
+            result.success(connectIQ.knownDevices?.isNotEmpty() ?: false)
+        } else {
+            result.error("WatchConnectivityGarminPlugin isPaired", "SDK not initialized", null)
+        }
     }
 
     private fun isReachable(result: Result) {
         thread {
-            for (device in connectIQ.connectedDevices ?: listOf()) {
-                val installedApp = getApplicationForDevice(device)
-                if (installedApp != null) {
-                    result.success(true)
-                    return@thread
+            if (initialized) {
+                for (device in connectIQ.connectedDevices ?: listOf()) {
+                    val installedApp = getApplicationForDevice(device)
+                    if (installedApp != null) {
+                        result.success(true)
+                        return@thread
+                    }
                 }
+                result.success(false)
+            } else {
+                result.error("WatchConnectivityGarminPlugin isReachable", "SDK not initialized", null)
             }
-            result.success(false)
         }
     }
 
 
     private fun sendMessage(call: MethodCall, result: Result) {
+        if (!initialized) {
+            result.error("WatchConnectivityGarminPlugin sendMessage", "SDK not initialized", null)
+            return
+        }
+
         val devices = connectIQ.connectedDevices ?: listOf()
 
         thread {
