@@ -42,7 +42,9 @@ public class SwiftWatchConnectivityGarminPlugin: NSObject, FlutterPlugin, IQDevi
         case "openUrl":
             openUrl(call, result)
         case "sendMessage":
-            sendMessage(call, result)
+            sendMessage(call, result) { returned in 
+                result(returned)
+            }
 
         // Not implemented
         default:
@@ -165,7 +167,7 @@ public class SwiftWatchConnectivityGarminPlugin: NSObject, FlutterPlugin, IQDevi
         result(false)
     }
 
-    private func sendMessage(_ call: FlutterMethodCall, _ result: FlutterResult) {
+    private func sendMessage(_ call: FlutterMethodCall, _ result: FlutterResult, completion: @escaping (AnyObject?) -> Void) {
         guard applicationId != nil else {
             result(FlutterError(code: "Not Initialized", message: nil, details: nil))
             return
@@ -178,19 +180,28 @@ public class SwiftWatchConnectivityGarminPlugin: NSObject, FlutterPlugin, IQDevi
             return
         }
 
-        var errors = [String]()
+        var errors: [String] = []
+        let dispatchGroup = DispatchGroup()
+
         for app in connectedApps {
-            connectIQ.sendMessage(call.arguments, to: app, progress: { _, _ in }) { result in
+            dispatchGroup.enter()
+
+            connectIQ.sendMessage(call.arguments, to: app, progress: { sentBytes, totalBytes in }) { result in
                 if result != .success {
                     errors.append("\(result)")
                 }
+                dispatchGroup.leave()
             }
         }
 
-        if errors.isEmpty {
-            result(nil)
-        } else {
-            result(FlutterError(code: "Error sending message", message: errors.joined(separator: ", "), details: nil))
+        dispatchGroup.notify(queue: .global()) {
+            DispatchQueue.main.async {
+                if errors.isEmpty {
+                    completion(nil)
+                } else{
+                   completion(FlutterError(code: "Error sending message", message: errors.joined(separator: ", "), details: nil))
+                } 
+            }
         }
     }
     
@@ -204,3 +215,4 @@ public class SwiftWatchConnectivityGarminPlugin: NSObject, FlutterPlugin, IQDevi
 }
 
 class IQUIOverrideDelegateStub: NSObject, IQUIOverrideDelegate {}
+

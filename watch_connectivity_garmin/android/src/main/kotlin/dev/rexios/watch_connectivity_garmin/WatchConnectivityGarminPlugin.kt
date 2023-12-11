@@ -189,24 +189,29 @@ class WatchConnectivityGarminPlugin : FlutterPlugin, MethodCallHandler {
         val devices = connectIQ.connectedDevices ?: listOf()
 
         thread {
-            val latch = CountDownLatch(devices.count())
-            val errors = mutableListOf<ConnectIQ.IQMessageStatus>()
-            for (device in devices) {
-                connectIQ.sendMessage(device, iqApp, call.arguments) { _, _, status ->
-                    if (status != ConnectIQ.IQMessageStatus.SUCCESS) {
-                        errors.add(status)
-                    }
+            try{
+                val latch = CountDownLatch(devices.count())
+                val errors = mutableListOf<ConnectIQ.IQMessageStatus>()
+                for (device in devices) {
+                    connectIQ.sendMessage(device, iqApp, call.arguments) { _, _, status ->
+                        if (status != ConnectIQ.IQMessageStatus.SUCCESS) {
+                            errors.add(status)
+                        }
 
-                    latch.countDown()
+                        latch.countDown()
+                    }
+                }
+                latch.await()
+                if (errors.isNotEmpty()) {
+                    result.error(errors.toString(), "Unable to send message", null)
+                } else {
+                    result.success(null)
                 }
             }
-
-            latch.await()
-            if (errors.isNotEmpty()) {
-                result.error(errors.toString(), "Unable to send message", null)
-            } else {
-                result.success(null)
+            catch (e: Exception) {
+                result.error("GARMIN WATCH CONNECTIVITY ERROR - Android", "Unable to send message - FAILURE DURING TRANSFER", null)
             }
         }
     }
 }
+
