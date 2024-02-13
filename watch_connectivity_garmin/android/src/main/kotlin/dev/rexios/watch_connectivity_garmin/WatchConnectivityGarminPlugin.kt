@@ -202,14 +202,17 @@ class WatchConnectivityGarminPlugin : FlutterPlugin, MethodCallHandler {
                         latch.countDown()
                     }
                 }
-                val success = latch.await(15, TimeUnit.SECONDS)
-                if (!success) {
-                    result.error("GARMIN WATCH CONNECTIVITY ERROR - Android", "Unable to send message - COUNT DOWN LATCH TIMEOUT", null)
-                }
-                if (errors.isNotEmpty()) {
-                    result.error(errors.toString(), "Unable to send message", null)
-                } else {
-                    result.success(null)
+                try {
+                    val success = latch.await(15, TimeUnit.SECONDS)
+                    if (!success) {
+                        result.error("GARMIN WATCH CONNECTIVITY ERROR - Android", "Unable to send message - COUNT DOWN LATCH TIMEOUT", null)
+                    } else if (errors.isNotEmpty()) {
+                        result.error(errors.toString(), "Unable to send message", null)
+                    } else {
+                        result.success(null)
+                    }
+                } catch (e: InterruptedException) {
+                    result.error("GARMIN WATCH CONNECTIVITY ERROR - Android", "Unable to send message - InterruptedException", null)
                 }
             }
             catch (e: Exception) {
