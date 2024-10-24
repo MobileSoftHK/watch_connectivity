@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.*
 import com.google.android.gms.wearable.DataEvent.TYPE_CHANGED
@@ -91,10 +92,14 @@ class WatchConnectivityPlugin : FlutterPlugin, MethodCallHandler,
     }
 
     private fun isPaired(result: Result) {
-        val apps = packageManager.getInstalledApplications(0)
-        val wearableAppInstalled =
-            apps.any { it.packageName == "com.google.android.wearable.app" || it.packageName == "com.samsung.android.app.watchmanager" }
-        result.success(wearableAppInstalled)
+        try {
+            GoogleApiAvailability.getInstance()
+                    .checkApiAvailability(nodeClient)
+                    .addOnSuccessListener { result.success(true) }
+                    .addOnFailureListener { result.success(false)}
+        } catch (e: Exception) {
+            result.success(false)
+        }
     }
 
     private fun isReachable(result: Result) {
