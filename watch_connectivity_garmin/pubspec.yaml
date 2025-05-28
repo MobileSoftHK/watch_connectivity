@@ -16,7 +16,7 @@ dependencies:
     git:
       url: https://github.com/MobileSoftHK/watch_connectivity.git
       path: ./watch_connectivity_platform_interface
-      ref: 0.2.1
+      ref: 0.2.0
 
 dev_dependencies:
   flutter_test:
