@@ -1,6 +1,6 @@
 name: watch_connectivity_garmin
 description: Wrapper for the ConnectIQ SDK to communicate with Garmin watches
-version: 0.1.6
+version: 0.2.1
 homepage: https://github.com/Rexios80/watch_connectivity/tree/master/watch_connectivity_garmin
 
 environment:
@@ -16,13 +16,13 @@ dependencies:
     git:
       url: https://github.com/MobileSoftHK/watch_connectivity.git
       path: ./watch_connectivity_platform_interface
-      ref: 0.2.0
+      ref: 0.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  rexios_lints: ^7.0.0
+  rexios_lints: ^9.1.0
 
 flutter:
   plugin:

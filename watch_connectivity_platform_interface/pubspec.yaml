@@ -1,6 +1,6 @@
 name: watch_connectivity_platform_interface
 description: Platform interface for communicating with wearable watch devices
-version: 0.2.0
+version: 0.2.1
 homepage: https://github.com/Rexios80/watch_connectivity/tree/master/watch_connectivity_platform_interface
 
 environment:
@@ -14,4 +14,4 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  rexios_lints: ^7.0.0
+  rexios_lints: ^9.1.0

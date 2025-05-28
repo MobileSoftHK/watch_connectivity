@@ -20,20 +20,13 @@ dependencies:
     path: ../../watch_connectivity_garmin
 
   is_wear: ^0.0.1+1
-  wear:
-    git:
-      prs:
-        - https://github.com/fluttercommunity/flutter_wear_plugin/pull/19
-        - https://github.com/fluttercommunity/flutter_wear_plugin/pull/22
-        - https://github.com/fluttercommunity/flutter_wear_plugin/pull/24
-      url: https://github.com/Rexios80/flutter_wear_plugin.git
-      ref: 473262879853259129e0a1d7431ce2e024746d58
+  wear_plus: ^1.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  rexios_lints: ^7.0.0
+  rexios_lints: ^9.1.0
 
 dependency_overrides:
   watch_connectivity_platform_interface:
