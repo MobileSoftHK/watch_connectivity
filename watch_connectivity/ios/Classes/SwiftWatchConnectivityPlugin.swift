@@ -41,7 +41,7 @@ public class SwiftWatchConnectivityPlugin: NSObject, FlutterPlugin, WCSessionDel
             result(session?.applicationContext ?? [:])
         case "receivedApplicationContexts":
             result([session?.receivedApplicationContext ?? [:]])
-        
+
         // Methods
         case "sendMessage":
             session?.sendMessage(call.arguments as! [String: Any], replyHandler: nil)
@@ -63,13 +63,12 @@ public class SwiftWatchConnectivityPlugin: NSObject, FlutterPlugin, WCSessionDel
                     result(FlutterError(code: "Unable to start watch app", message: nil, details: nil))
                 }
             }
-        
+
         // Not implemented
         default:
             result(FlutterMethodNotImplemented)
         }
     }
-  }
     
   public func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {}
     
