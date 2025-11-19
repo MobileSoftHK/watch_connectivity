@@ -102,6 +102,7 @@ class WatchConnectivityGarminPlugin : FlutterPlugin, MethodCallHandler {
             connectIQ?.shutdown(context)
             initialized = false
             result.success(true)
+            return
         }
         result.success(false)
     }
