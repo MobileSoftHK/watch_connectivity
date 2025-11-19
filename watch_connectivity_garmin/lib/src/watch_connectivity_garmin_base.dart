@@ -14,6 +14,11 @@ class WatchConnectivityGarmin extends WatchConnectivityBase {
     return channel.invokeMethod('initialize', options.toJson());
   }
 
+  /// Shutdown the platform SDK
+  Future<void> shutdown() {
+    return channel.invokeMethod('shutdown');
+  }
+
   /// Launches Garmin Connect Mobile for the purpose of retrieving a list of
   /// ConnectIQ-compatible devices. Note that by launching GCM, this method
   /// causes the companion app to go into the background, possibly resulting in
